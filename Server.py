@@ -3,48 +3,48 @@ import socket
 # My Modules
 from Helpers import Recv, Send, WaitForACK
 
-def Server(dest, bandwidth_limits = (10, 1024, 2048)):
-    conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print(f"Starting server on {dest}")
-    conn.bind(dest)
+info = {
+    "Client": {
+        "Clients": [],  # Clients: [("127.0.0.1", 9000)]
+    },
+    "Server": {
+        "Source": ("0.0.0.0", 9000)
+    }
+}
 
-    while True:
-        # Waiting for flag
-        flag, address = Recv(conn)
-        flag = flag.decode()
 
-        if flag == "none":
-            print("[Client]: Waiting...")
-        elif flag == "msg":
-            msg = Recv(conn)[0].decode()
-            print(f"[Client]: {msg}")
-        elif flag == "set":
-            # Get Next command.
-            command = Recv(conn)[0].decode()
-            print(command)
-            if command == "name":
-                print("[ACTION]: Setting Name")
-                # Change what?
-                who = Recv(conn)[0].decode()
-                if who == "client":
-                    name = Recv(conn)[0].decode()
-                    print(f"[Client]: Name Changed to: {name}")
-                elif who == "server":
-                    name = Recv(conn)[0].decode()
-                    print(f"[Server]: Name Changed to: {name}")
-        elif flag == "exit":
-            print("[Server]: Shutdown")
-            conn.close()
-            quit()
-        elif flag == "reply":
-            msg = input("(msg): ")
-            conn.sendto(msg.encode(), address)
-            print("Waiting for ACK...")
-            WaitForACK(conn)
-        else:
-            print("[Client]: Waiting...")
-        # Always send end ACK.
-        conn.sendto("ACK".encode(), address)
+class Server:
+    def __init__(self,  dest, bandwidth_limits = (10, 1024, 2028)):
+        self.dest = dest
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        
+        # Info
+        self.current_clients = []
+        self.bandwidth_limits = bandwidth_limits
+
+    def Server(self):
+        # Starting Server
+        print(f"Starting server on {dest}")
+        self.socket.bind(self.dest)
+
+        while True:
+            # Get Flag
+            flag, address = Recv(self.socket)
+            flag = flag.decode()
+
+            # Process Client Request (Based on Flag.)
+            if flag == "client":
+                flag2, address = Recv(self.socket)
+                flag2 = flag2.decode()
+
+                if flag2 == "scan":
+                    # Send List of Client
+                    Send(self.socket, self.current_clients, address, False)
+
+
+            
+            # Always send end ACK.
+            self.socket.sendto("ACK".encode(), address)
 
 if __name__ == "__main__":
     dest = ("0.0.0.0", 9000)
