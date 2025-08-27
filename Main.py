@@ -1,3 +1,4 @@
+from plyer import notification
 from os import system
 import struct
 import socket
@@ -78,6 +79,8 @@ def ListToHex(data):
 def Recv(connection, bandwidth=1024):
     data, address = connection.recvfrom(bandwidth)
     return (data, address)
+def PushNote(msg):
+    notification.notify(title="LunChat", message=msg, timeout=10)
 
 def Client():
     # Connecting to Server
@@ -85,6 +88,7 @@ def Client():
     print("Reply allow the server to reply.")
     WaitClear = True
     while True:
+        print("IN DEV: (PING)")
         option = input("(msg, set, quit, reply, clear, chuck): ")
 
         if option == "msg":
@@ -132,7 +136,10 @@ def Client():
                 # Convert to Hex
                 hexList = ListToHex(lines)
                 SendChuck(conn, dest, hexList, format="list")
-
+        elif option == "ping":
+            msg = input("Short Msg: ")
+            conn.sendto("ping".encode(), dest)
+            conn.sendto(msg.encode(), dest)
         # End ACK
         WaitForACK(conn)
         if WaitClear:
@@ -168,7 +175,6 @@ def Server():
                     name = Recv(conn)[0].decode()
                     print(f"[Server]: Name Changed to: {name}")
         elif flag == "exit":
-            print("[Client]: Disconnect Request")
             print("[Server]: Shutdown")
             conn.close()
             quit()
@@ -189,6 +195,10 @@ def Server():
                         break
                     else:
                         print(f"[Client]: Chuck Missing Data: {Recv(conn)[0].decode()}")
+        elif flag == "ping":
+            msg, addr = conn.recvfrom(bandwidth_limits[2])
+            PushNote(msg.decode())
+
         conn.sendto("ACK".encode(), address)
 
 if __name__ == "__main__":
