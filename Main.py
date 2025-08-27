@@ -153,62 +153,7 @@ def Client():
         if WaitClear:
             system("clear")
             system("cls")
-def Server():
-    conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print(f"Starting server on {dest}")
-    conn.bind(dest)
 
-    while True:
-        # Waiting for flag
-        flag, address = Recv(conn)
-        flag = flag.decode()
-        print(f"flag: {flag}")
-
-        if flag == "none":
-            print("[Client]: Waiting...")
-        elif flag == "msg":
-            msg = Recv(conn)[0].decode()
-            print(f"[Client]: {msg}")
-        elif flag == "set":
-            # Get Next command.
-            command = Recv(conn)[0].decode()
-            print(command)
-            if command == "name":
-                print("[ACTION]: Setting Name")
-                # Change what?
-                who = Recv(conn)[0].decode()
-                if who == "client":
-                    name = Recv(conn)[0].decode()
-                    print(f"[Client]: Name Changed to: {name}")
-                elif who == "server":
-                    name = Recv(conn)[0].decode()
-                    print(f"[Server]: Name Changed to: {name}")
-        elif flag == "exit":
-            print("[Server]: Shutdown")
-            conn.close()
-            quit()
-        elif flag == "reply":
-            msg = input("(msg): ")
-            conn.sendto(msg.encode(), address)
-            print("Waiting for ACK...")
-            WaitForACK(conn)
-        elif flag == "chuck":
-            chuck_data = GetChuck(conn, address)
-            data = Recv(conn)
-            if data[0].decode() == "DONE":
-                print(f"[Client]: Got Chuck Data: {chuck_data[0]}")
-            else:
-                while True:
-                    data = Recv(conn)
-                    if data[0].decode() == "DONE":
-                        break
-                    else:
-                        print(f"[Client]: Chuck Missing Data: {Recv(conn)[0].decode()}")
-        elif flag == "ping":
-            msg, addr = conn.recvfrom(bandwidth_limits[2])
-            PushNote(msg.decode())
-
-        conn.sendto("ACK".encode(), address)
 
 if __name__ == "__main__":
     args = sys.argv
