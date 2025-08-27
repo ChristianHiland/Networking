@@ -1,10 +1,18 @@
-from plyer import notification
 from os import system
 import struct
 import socket
 import sys
 
-dest = ("127.0.0.1", 9000)
+# Optionals
+imports = []
+try:
+    from plyer import notification
+    imports.append("plyer")
+except:
+    print("Failed to import Player")
+
+dest = ("127.0.0.1", 5727)
+server_dest = ("", 5727)
 bandwidth_limits = (10, 1024, 2048)
 server_limits = (10, 1024, 2048)
 debug = True
@@ -80,13 +88,13 @@ def Recv(connection, bandwidth=1024):
     data, address = connection.recvfrom(bandwidth)
     return (data, address)
 def PushNote(msg):
-    notification.notify(title="LunChat", message=msg, timeout=10)
+    if imports.__contains__("plyer"):
+        notification.notify(title="LunChat", message=msg, timeout=10)
 
 def Client():
     # Connecting to Server
     conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print("Reply allow the server to reply.")
-    WaitClear = True
+    WaitClear = False
     while True:
         print("IN DEV: (PING)")
         option = input("(msg, set, quit, reply, clear, chuck): ")
@@ -147,6 +155,7 @@ def Client():
             system("cls")
 def Server():
     conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    print(f"Starting server on {dest}")
     conn.bind(dest)
 
     while True:
