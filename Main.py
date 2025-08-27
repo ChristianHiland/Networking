@@ -1,11 +1,12 @@
 from os import system
+import struct
 import socket
 import sys
 
-
 dest = ("127.0.0.1", 9000)
 bandwidth_limits = (10, 1024, 2048)
-debug = False
+server_limits = (10, 1024, 2048)
+debug = True
 
 def WaitForACK(connection):
     data, address = connection.recvfrom(1024)
@@ -17,20 +18,65 @@ def WaitForACK(connection):
         if debug:
             print(f"FAILED NET SYNC!")
         return False
-
-def SendChuck(connection, address, data):
-    # Start sending size, max bandwidth, recive max Server bandwidth, Start sending at max server bandwidth.
-    size = sys.getsizeof(data)
+def SendChuck(connection, address, data = [], format="single"):
+    # Getting Info For Local...
+    size = 0
+    if format == "single":
+       size = sys.getsizeof(data)
+    elif format == "list":
+        size = len(data)
     max_bandwidth = bandwidth_limits[2]
-    connection.sendto(f"{size}".encode(), address)
-    connection.sendto(f"{max_bandwidth}".encode(), address)
-    max_server_bandwidth = Recv(connection)[0].decode()
-    connection.sendto(f"{data}".encode(), address)
 
+    # Sending info & data.
+    connection.sendto(format.encode(), address)                 # Send Format
+    connection.sendto(f"{size}".encode(), address)              # Send Size
+    connection.sendto(f"{max_bandwidth}".encode(), address)     # Send Max Bandwidth
+    max_server_bandwidth = Recv(connection)[0].decode()         # Get Server's Max Bandwidth
+    if format == "list":
+        for hex_item in data:
+            connection.sendto(f"{hex_item}".encode('utf-8'), address)                # Send Data
+            WaitForACK(connection)                              # Wait for ACK.
+    elif format == "single":
+        connection.sendto(f"{data}".encode(), address)          # Send Data
+    connection.sendto("DONE".encode(), address)
+def GetChuck(connection, address):
+    bandwidth = 1024
+    format = Recv(connection)[0].decode()                       # Get Format
+    size = int(Recv(connection)[0].decode())                    # Get Size (Becomes len in list format).
+    max_bandwidth = int(Recv(connection)[0].decode())           # Get Client's Max Bandwidth
+    connection.sendto(f"{server_limits[2]}".encode(), address)  # Send Server's Max Bandwidth
+    
+    # Set Bandwidth
+    if server_limits[2] <= max_bandwidth:
+        bandwidth = server_limits[2]
+    else:
+        bandwidth = max_bandwidth
 
-
-def Recv(connection):
-    data, address = connection.recvfrom(1024)
+    data = []
+    if format == "list":
+        data_list = []
+        for i in range(0, size):
+            result = Recv(connection)
+            data_list.append(result[0].decode())                # Get Data.
+            connection.sendto("ACK".encode(), result[1])        # Send ACK.
+    elif format == "single": 
+        data = Recv(connection)                                 # Get Data
+    return (size, bandwidth, data)
+def ListToHex(data):
+    hexData = []
+    count = 0
+    try:
+        print("Check, Make sure there's at least 3!")
+    except:
+        print("Unsafe!, Make Sure to keep your chucks at a size of 3, 6, 9, 12, etc.")
+    while True:
+        count += 1
+        if count >= len(data) - 1:
+            break
+        hexData.append(data[count][0])       
+    return hexData
+def Recv(connection, bandwidth=1024):
+    data, address = connection.recvfrom(bandwidth)
     return (data, address)
 
 def Client():
@@ -39,7 +85,7 @@ def Client():
     print("Reply allow the server to reply.")
     WaitClear = True
     while True:
-        option = input("(msg, set, quit, reply, clear): ")
+        option = input("(msg, set, quit, reply, clear, chuck): ")
 
         if option == "msg":
             msg = input("(msg): ")
@@ -69,12 +115,29 @@ def Client():
             WaitClear = False
         elif option == "clear":
             WaitClear = True
+        elif option == "chuck":
+            print("[INFO]: !BETA FEATURE!")
+            print("Formats: Binary, Hex, Text, File")
+            option = input("Format: ")
+            if option == "text":
+                count = 0
+                # Get Lines
+                lines = []
+                while True:
+                    line = input(f"{count}: ")
+                    count += 1
+                    if line.lower() == "end":
+                        break
+                    lines.append((count, line))
+                # Convert to Hex
+                hexList = ListToHex(lines)
+                SendChuck(conn, dest, hexList, format="list")
+
         # End ACK
         WaitForACK(conn)
         if WaitClear:
             system("clear")
             system("cls")
-
 def Server():
     conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     conn.bind(dest)
@@ -83,6 +146,7 @@ def Server():
         # Waiting for flag
         flag, address = Recv(conn)
         flag = flag.decode()
+        print(f"flag: {flag}")
 
         if flag == "none":
             print("[Client]: Waiting...")
@@ -113,7 +177,18 @@ def Server():
             conn.sendto(msg.encode(), address)
             print("Waiting for ACK...")
             WaitForACK(conn)
-        
+        elif flag == "chuck":
+            chuck_data = GetChuck(conn, address)
+            data = Recv(conn)
+            if data[0].decode() == "DONE":
+                print(f"[Client]: Got Chuck Data: {chuck_data[0]}")
+            else:
+                while True:
+                    data = Recv(conn)
+                    if data[0].decode() == "DONE":
+                        break
+                    else:
+                        print(f"[Client]: Chuck Missing Data: {Recv(conn)[0].decode()}")
         conn.sendto("ACK".encode(), address)
 
 if __name__ == "__main__":
