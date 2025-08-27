@@ -11,7 +11,7 @@ try:
 except:
     print("Failed to import Player")
 
-dest = ("127.0.0.1", 3890)
+dest = ("45.79.207.244", 3890)
 server_dest = ("", 5727)
 bandwidth_limits = (10, 1024, 2048)
 server_limits = (10, 1024, 2048)
