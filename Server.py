@@ -13,7 +13,7 @@ class Server(threading.Thread):
         self.current_clients = []
         self.bandwidth = bandwidth
 
-    def Server(self):
+    def Start(self):
         # Starting Server
         print(f"Starting server on {dest}")
         self.socket.bind(self.dest)
@@ -89,4 +89,5 @@ class Server(threading.Thread):
 
 
 dest = ("0.0.0.0", 9001)
-Server(dest)
+server = Server(dest)
+server.Start()
