@@ -47,7 +47,9 @@ class Server(threading.Thread):
                         else:
                             self.socket.sendto("ERR".encode(), address)                 # Error Occred.
                             print(f"[Client Error]: Client: {client_info} not found.")
-
+            elif flag == "scan":
+                # Return a list of clients.
+                self.Send(self.current_clients, address)
 
 
             # Always send end ACK.

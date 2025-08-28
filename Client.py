@@ -37,6 +37,9 @@ class Client:
                     self.Send(client_info, self.dest, WaitACK=True)                     # Send "to" info to server, and wait for a ACK.
                     msg = input("(Message): ")
                     self.Send(msg, self.dest)
+            elif flag == "scan":
+                clients = self.Recv()[0].decode()
+                print(f"Current Clients: {clients}")
 
             # Always send end ACK.
             self.WaitForACK()
