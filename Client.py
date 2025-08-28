@@ -17,6 +17,7 @@ class Client:
             # Get Flag
             print("Msg, Connect, Pass")
             flag = input("Option: ").lower()
+            self.Send(flag, self.dest)
 
             # Process Client Request (Based on Flag.)
             if flag == "msg":

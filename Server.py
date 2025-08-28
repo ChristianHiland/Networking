@@ -23,8 +23,6 @@ class Server(threading.Thread):
             flag, address = self.Recv()
             flag = flag.decode()
 
-            print(f"Flag: {flag}")
-
             # Process Client Request (Based on Flag.)
             if flag == "msg":
                 msg = self.Recv()[0].decode()
@@ -34,6 +32,7 @@ class Server(threading.Thread):
                 client_info = self.Recv()
                 info = (client_info[0], client_info[1])
                 self.current_clients.append(info)
+                print(f"New Client Connected! {client_info[0]}")
             elif flag == "pass":
                 data = self.Recv()                                                      # Get 2nd Flag
                 flag2 = data[0].decode()
