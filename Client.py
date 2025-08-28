@@ -17,7 +17,8 @@ class Client:
             # Get Flag
             print("Msg, Connect, Pass")
             flag = input("Option: ").lower()
-            self.Send(flag, self.dest)
+            if flag != "listen":
+                self.Send(flag, self.dest)
 
             # Process Client Request (Based on Flag.)
             if flag == "msg":
@@ -34,14 +35,15 @@ class Client:
                 
                 if option == "msg":                                                      # Client wants to send a message to another client.
                     client_info = input("Client Name: ")                                # Get "to" info. (Client Name)
-                    self.Send(client_info, self.dest, WaitACK=True)                     # Send "to" info to server, and wait for a ACK.
-                    msg = input("(Message): ")
-                    self.Send(msg, self.dest)
+                    result = self.Send(client_info, self.dest, WaitACK=True)                     # Send "to" info to server, and wait for a ACK.
+                    if result:    
+                        msg = input("(Message): ")
+                        self.Send(msg, self.dest)
             elif flag == "scan":
                 clients = self.Recv()[0].decode()
                 print(f"Current Clients: {clients}")
             elif flag == "listen":
-                data = self.Recv()
+                data = self.Recv(SendACK=True)
                 print(f"Recived: {data[0]}")
             # Always send end ACK.
             self.WaitForACK()
