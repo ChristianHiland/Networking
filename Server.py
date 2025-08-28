@@ -78,6 +78,6 @@ class Server(threading.Thread):
             print("[ERROR] Failed NET SYNC!")
             return False
 
-if __name__ == "__main__":
-    dest = ("0.0.0.0", 9000)
-    Server(dest)
+
+dest = ("0.0.0.0", 9000)
+Server(dest)
