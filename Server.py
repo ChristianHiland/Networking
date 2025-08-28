@@ -1,7 +1,8 @@
 import threading
 import socket
 
-# My Modules
+
+print("Script Ran")
 
 class Server(threading.Thread):
     def __init__(self,  dest, bandwidth = 1024):
