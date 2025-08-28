@@ -23,6 +23,8 @@ class Server(threading.Thread):
             flag, address = self.Recv()
             flag = flag.decode()
 
+            print(f"Flag: {flag}")
+
             # Process Client Request (Based on Flag.)
             if flag == "msg":
                 msg = self.Recv()[0].decode()
