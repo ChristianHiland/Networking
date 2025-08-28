@@ -9,7 +9,7 @@ class Client:
         # Info
         self.bandwidth = bandwidth
 
-    def Client(self):
+    def Start(self):
         # Starting Server
         print(f"Connecting Client to {self.dest}")
 
@@ -68,3 +68,7 @@ class Client:
         else:
             print("[ERROR] Failed NET SYNC!")
             return False
+        
+
+client = Client(("45.79.207.244", 9000))
+client.Start()
