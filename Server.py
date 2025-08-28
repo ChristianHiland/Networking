@@ -40,7 +40,7 @@ class Server(threading.Thread):
                 if flag2 == "msg":                                                      # Client wants to send a message to another client.
                     client_info = self.Recv()                                           # Get "to" info. (Client Name)
                     for currently_connected in self.current_clients:
-                        if currently_connected[0] == client_info[0]:
+                        if currently_connected[0].decode() == client_info[0].decode():
                             self.socket.sendto("ACK".encode(), address)                 # Send ACK to sender.
                             msg = self.Recv()[0]                                        # Get Sender's Message
                             self.Send(msg, currently_connected[1], WaitACK=True)        # Send & Wait For ACK.

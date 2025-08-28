@@ -40,7 +40,9 @@ class Client:
             elif flag == "scan":
                 clients = self.Recv()[0].decode()
                 print(f"Current Clients: {clients}")
-
+            elif flag == "listen":
+                data = self.Recv()
+                print(f"Recived: {data[0]}")
             # Always send end ACK.
             self.WaitForACK()
 
