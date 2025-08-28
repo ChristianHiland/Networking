@@ -1,7 +1,7 @@
 import threading
 import socket
 
-class Client(threading.Thread):
+class Client:
     def __init__(self,  dest, bandwidth = 1024):
         self.dest = dest
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -9,9 +9,9 @@ class Client(threading.Thread):
         # Info
         self.bandwidth = bandwidth
 
-    def Server(self):
+    def Client(self):
         # Starting Server
-        print(f"Connecting Client on {self.dest}")
+        print(f"Connecting Client to {self.dest}")
 
         while True:
             # Get Flag

@@ -67,17 +67,25 @@ class Server(threading.Thread):
     def Recv(self, SendACK=False):
         data, address = self.socket.recvfrom(self.bandwidth)
         if SendACK:
-            self.socket.sendto("ACK".encode(), address)
+            self.SendACK(address, flag="ACK")
         return (data, address)
+
+    def SendACK(self, address, flag = "ACK"):
+        self.socket.sendto(flag.encode(), address)    
+        if flag == "ERR":
+            print("[Server]: Error")
+
     
     def WaitForACK(self):
         data, address = self.socket.recvfrom(self.bandwidth)
         if data.decode() == "ACK":
             return True
-        else:
+        elif data.decode() == "ERR":
             print("[ERROR] Failed NET SYNC!")
+            return False
+        else:
             return False
 
 
-dest = ("0.0.0.0", 9000)
+dest = ("0.0.0.0", 9001)
 Server(dest)
